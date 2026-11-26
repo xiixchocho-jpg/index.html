@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>宅建試験 一問一答アプリ</title>
+  <style>
+    /* =========================================
+       全体のデザイン設定（CSS）
+       スマホでも読みやすく押しやすい設計にしています
+       ========================================= */
+    :root {
+      --bg: #f4f6f9;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --maru: #0284c7;
+      --batsu: #dc2626;
+      --success-bg: #ecfdf5;
+      --success-border: #10b981;
+      --success-text: #065f46;
+      --error-bg: #fef2f2;
+      --error-border: #ef4444;
+      --error-text: #991b1b;
+      --warn-bg: #fffbeb;
+      --warn-text: #92400e;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 16px 14px 40px;
+    }
+
+    /* ヘッダー */
+    .app-header {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .app-title {
+      margin: 0;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .app-subtitle {
+      margin: 4px 0 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    /* カード共通 */
+    .card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border);
+      margin-bottom: 14px;
+    }
+
+    /* サマリー（学習状況） */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      text-align: center;
+    }
+
+    .stat-box {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 6px;
+    }
+
+    .stat-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .stat-value.warn {
+      color: var(--batsu);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* ボタン共通 */
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      transition: transform 0.05s ease, opacity 0.15s ease, background-color 0.15s ease;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 1rem;
+      font-weight: 700;
+      background-color: var(--primary);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      background-color: #eef2ff;
+      color: var(--primary-dark);
+      border: 1px solid #c7d2fe;
+    }
+
+    .btn-warning {
+      width: 100%;
+      padding: 13px 16px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      background-color: #fef2f2;
+      color: var(--batsu);
+      border: 1px solid #fecaca;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.85rem;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+    }
+
+    /* 分野リスト */
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin: 0 0 10px;
+      color: #374151;
+    }
+
+    .category-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .category-btn {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      text-align: left;
+    }
+
+    .category-btn:hover {
+      border-color: var(--primary);
+      background: #f8fafc;
+    }
+
+    .category-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .category-meta {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .category-arrow {
+      font-size: 1.1rem;
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    /* オプション（シャッフル） */
+    .option-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 4px 4px;
+      font-size: 0.9rem;
+      color: #374151;
+    }
+
+    .switch-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .switch-label input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+    }
+
+    /* クイズ画面 */
+    .quiz-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+
+    .quiz-progress-text {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #374151;
+    }
+
+    .progress-bar-wrap {
+      width: 100%;
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--primary);
+      transition: width 0.25s ease;
+    }
+
+    .badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: var(--primary-dark);
+    }
+
+    .badge.review {
+      background: var(--warn-bg);
+      color: var(--warn-text);
+    }
+
+    .question-text {
+      font-size: 1.08rem;
+      font-weight: 600;
+      margin: 0 0 18px;
+      color: #111827;
+      line-height: 1.75;
+    }
+
+    /* ○×ボタン */
+    .answer-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .btn-ox {
+      padding: 16px 10px;
+      font-size: 1.35rem;
+      font-weight: 800;
+      border-radius: 12px;
+      color: #ffffff;
+      min-height: 60px;
+    }
+
+    .btn-maru {
+      background-color: var(--maru);
+    }
+
+    .btn-batsu {
+      background-color: var(--batsu);
+    }
+
+    .btn-ox span {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      margin-top: 2px;
+      opacity: 0.95;
+    }
+
+    /* 判定と解説ボックス */
+    .feedback-box {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 12px;
+      border-left: 5px solid;
+    }
+
+    .feedback-box.correct {
+      background: var(--success-bg);
+      border-color: var(--success-border);
+      color: var(--success-text);
+    }
+
+    .feedback-box.incorrect {
+      background: var(--error-bg);
+      border-color: var(--error-border);
+      color: var(--error-text);
+    }
+
+    .feedback-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      margin: 0 0 6px;
+    }
+
+    .feedback-note {
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .explanation-text {
+      margin: 0;
+      font-size: 0.93rem;
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    .next-btn-wrap {
+      margin-top: 14px;
+    }
+
+    /* 結果・間違い一覧 */
+    .result-score {
+      text-align: center;
+      padding: 12px 0;
+    }
+
+    .result-big {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .wrong-item {
+      border-bottom: 1px solid var(--border);
+      padding: 12px 0;
+    }
+
+    .wrong-item:last-child {
+      border-bottom: none;
+    }
+
+    .wrong-item-q {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin: 6px 0;
+    }
+
+    .wrong-item-a {
+      font-size: 0.86rem;
+      color: #374151;
+      background: #f9fafb;
+      padding: 8px 10px;
+      border-radius: 8px;
+    }
+
+    .footer-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      gap: 8px;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="app-header">
+      <h1 class="app-title">宅建試験 一問一答</h1>
+      <p class="app-subtitle">ブラウザだけで動く自分専用の復習アプリ</p>
+    </header>
+
+    <!-- 画面の中身はJavaScriptがここに描画します -->
+    <main id="app"></main>
+  </div>
+
+  <script>
+    /* =========================================================
+       1. 問題データ（後からここに追加・編集できます）
+       =========================================================
+       【追加ルール】
+       - id: 他の問題と重複しない半角英数字の名前（例: "gyoho-04"）
+       - category: "宅建業法" / "権利関係" / "法令上の制限" / "税・その他" のいずれか
+       - statement: 問題文（文字列）
+       - answer: 正解が ○ なら true、× なら false
+       - explanation: 回答後に表示される解説文（文字列）
+    ========================================================= */
+    const QUESTIONS = [
+      // --- 宅建業法（3問） ---
+      {
+        id: "gyoho-01",
+        category: "宅建業法",
+        statement: "宅地建物取引業者が、自ら売主として宅地建物取引業者でない買主と宅地の売買契約を締結する場合、売買代金の2割を超える額の手付を受領することはできない。",
+        answer: true,
+        explanation: "正しい記述です（○）。宅建業者が自ら売主となり、宅建業者でない買主と売買契約を結ぶ場合（8種制限）、売買代金の20%（2割）を超える手付を受領することは禁止されています（宅建業法第39条）。"
+      },
+      {
+        id: "gyoho-02",
+        category: "宅建業法",
+        statement: "専任媒介契約の有効期間は3か月を超えることができず、これより長い期間を定めたときは、その契約全体が無効となる。",
+        answer: false,
+        explanation: "誤りです（×）。専任媒介契約の有効期間は3か月を超えることができませんが、3か月より長い期間を定めた場合でも契約全体が無効になるのではなく、有効期間が「3か月」とみなされます（宅建業法第34条の2）。"
+      },
+      {
+        id: "gyoho-03",
+        category: "宅建業法",
+        statement: "宅地建物取引業者が、自ら売主として宅地建物取引業者でない買主と宅地の売買契約を、売主である宅建業者の事務所において締結した場合、買主はクーリング・オフによる契約の解除をすることができる。",
+        answer: false,
+        explanation: "誤りです（×）。売主である宅建業者の事務所等で売買契約を締結（または買受けの申込みを）した場合は、買主に冷静な判断ができる環境があるため、クーリング・オフはできません（宅建業法第37条の2）。"
+      },
+
+      // --- 権利関係（3問） ---
+      {
+        id: "kenri-01",
+        category: "権利関係",
+        statement: "未成年者が法定代理人の同意を得ずに自己所有の土地を売却する契約を結んだ場合、その契約は原則として取り消すことができる。",
+        answer: true,
+        explanation: "正しい記述です（○）。未成年者が法定代理人の同意を得ないで行った法律行為（単に権利を得、または義務を免れる行為などを除く）は、原則として取り消すことができます（民法第5条）。"
+      },
+      {
+        id: "kenri-02",
+        category: "権利関係",
+        statement: "Aが自己所有の甲土地をBに売却した後、さらにCにも売却してCが先に所有権移転登記を備えた場合、CがBへの売却の事実を知っていた（悪意であった）としても、背信的悪意者にあたらない限り、Cが甲土地の所有権を取得する。",
+        answer: true,
+        explanation: "正しい記述です（○）。不動産の二重譲渡では、先に登記を備えた方が所有権を確定的に取得します。第2買主が単に第1譲渡を知っていただけ（単純悪意）であれば背信的悪意者にはあたらず、登記を備えたCが優先します（民法第177条）。"
+      },
+      {
+        id: "kenri-03",
+        category: "権利関係",
+        statement: "売買の目的物について種類または品質に関して契約の内容に適合しない場合、買主が売主に対して担保責任を追及するには、原則として不適合を知った時から1年以内にその旨を売主に通知しなければならない。",
+        answer: true,
+        explanation: "正しい記述です（○）。引き渡された目的物の種類・品質に関する契約不適合については、買主が不適合を知った時から1年以内にその旨を売主に通知しないときは、原則として追完請求や代金減額請求などができなくなります（民法第566条）。"
+      },
+
+      // --- 法令上の制限（3問） ---
+      {
+        id: "horei-01",
+        category: "法令上の制限",
+        statement: "都市計画法において、市街化区域は「すでに市街地を形成している区域及びおおむね10年以内に優先的かつ計画的に市街化を図るべき区域」と定められている。",
+        answer: true,
+        explanation: "正しい記述です（○）。反対に、市街化調整区域は「市街化を抑制すべき区域」と定められています（都市計画法第7条）。"
+      },
+      {
+        id: "horei-02",
+        category: "法令上の制限",
+        statement: "都市計画区域および準都市計画区域内において、建築物の敷地は、原則として建築基準法上の道路（原則として幅員4m以上）に2m以上接していなければならない。",
+        answer: true,
+        explanation: "正しい記述です（○）。これを「接道義務」といいます。災害時の避難や消防活動のスペースを確保するための重要なルールです（建築基準法第43条）。"
+      },
+      {
+        id: "horei-03",
+        category: "法令上の制限",
+        statement: "市街化区域内の農地を、あらかじめ農業委員会に届け出て宅地に転用する場合であっても、必ず都道府県知事等の許可を受けなければならない。",
+        answer: false,
+        explanation: "誤りです（×）。市街化区域内の農地を転用する場合（農地法第4条・第5条）は、あらかじめ農業委員会へ「届出」を行えば、都道府県知事等の「許可」は不要です。"
+      },
+
+      // --- 税・その他（3問） ---
+      {
+        id: "zei-01",
+        category: "税・その他",
+        statement: "宅地建物取引業者が売主となり、個人である買主と3,000万円の土地売買契約書を作成した場合、印紙税は課税されない。",
+        answer: false,
+        explanation: "誤りです（×）。不動産の譲渡に関する契約書（記載金額1万円以上）には、売主・買主が個人か業者かにかかわらず、原則として印紙税が課税されます（印紙税法）。"
+      },
+      {
+        id: "zei-02",
+        category: "税・その他",
+        statement: "相続によって不動産を取得した場合、原則として不動産取得税は課税されない。",
+        answer: true,
+        explanation: "正しい記述です（○）。相続による不動産の取得は形式的・承継的な取得とみなされるため、不動産取得税は非課税となります（地方税法第73条の7）。"
+      },
+      {
+        id: "zei-03",
+        category: "税・その他",
+        statement: "宅地建物取引業者が分譲宅地の広告を行う際、実際の駅までの徒歩所要時間が10分であるにもかかわらず「徒歩5分」と表示した場合、他の記載事項が正確であれば不当表示にはあたらない。",
+        answer: false,
+        explanation: "誤りです（×）。駅までの徒歩所要時間を実際より著しく短く表示することは不当表示（優良誤認表示等）にあたり、景品表示法や公正競争規約に違反します。なお、徒歩時間は道路距離80m＝1分（1分未満切上げ）で計算します。"
+      }
+    ];
+
+    /* =========================================================
+       2. 定数・ブラウザ保存（localStorage）の仕組み
+       ========================================================= */
+    const CATEGORIES = ["宅建業法", "権利関係", "法令上の制限", "税・その他"];
+    const STORAGE_KEY = "takken_quiz_progress_v1";
+
+    function createEmptyProgress() {
+      return {
+        totalAnswered: 0,
+        totalCorrect: 0,
+        wrongIds: [],       // 間違えた問題のidを記録する配列
+        questionStats: {}   // 各問題ごとの { attempts, correctCount, lastCorrect }
+      };
+    }
+
+    function loadProgress() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return createEmptyProgress();
+        const parsed = JSON.parse(raw);
+        return {
+          totalAnswered: Number(parsed.totalAnswered) || 0,
+          totalCorrect: Number(parsed.totalCorrect) || 0,
+          wrongIds: Array.isArray(parsed.wrongIds) ? parsed.wrongIds : [],
+          questionStats: parsed.questionStats && typeof parsed.questionStats === "object" ? parsed.questionStats : {}
+        };
+      } catch (e) {
+        return createEmptyProgress();
+      }
+    }
+
+    function saveProgress(progress) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+      } catch (e) {
+        // プライベートブラウズ等で保存できない場合も動作を止めない
+      }
+    }
+
+    /* =========================================================
+       3. アプリの状態管理
+       ========================================================= */
+    let progress = loadProgress();
+
+    const state = {
+      view: "home",               // "home" | "quiz" | "result" | "wrongList"
+      shuffle: false,             // ランダム出題するか
+      modeLabel: "",              // 現在のモード名
+      quizQuestions: [],          // 今回出題する問題リスト
+      currentIndex: 0,            // 何問目か（0始まり）
+      sessionAnswered: 0,         // 今回の回答済み数
+      sessionCorrect: 0,          // 今回の正答数
+      hasAnsweredCurrent: false,  // 現在の問題に回答したか
+      lastUserAnswer: null,       // ユーザーが押した ○(true) / ×(false)
+      clearedReviewNow: false,    // 今回、要復習から外れたか
+      sessionWrongQuestions: []   // 今回のセッションで間違えた問題
+    };
+
+    const appEl = document.getElementById("app");
+
+    /* =========================================================
+       4. 便利な補助関数
+       ========================================================= */
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    // 存在する問題IDだけに絞った要復習IDリストを返す
+    function getValidWrongIds() {
+      const validIds = new Set(QUESTIONS.map((q) => q.id));
+      return progress.wrongIds.filter((id) => validIds.has(id));
+    }
+
+    function getCategorySummary(category) {
+      const list = QUESTIONS.filter((q) => q.category === category);
+      const masteredCount = list.filter((q) => {
+        const stat = progress.questionStats[q.id];
+        return stat && stat.lastCorrect === true;
+      }).length;
+      return { total: list.length, masteredCount };
+    }
+
+    /* =========================================================
+       5. クイズの操作（開始・回答・次へ・リセット）
+       ========================================================= */
+    function startQuiz(target) {
+      let list = [];
+      let label = "";
+
+      if (target === "all") {
+        list = [...QUESTIONS];
+        label = "全分野";
+      } else if (target === "wrong") {
+        const wrongSet = new Set(getValidWrongIds());
+        list = QUESTIONS.filter((q) => wrongSet.has(q.id));
+        label = "間違えた問題の復習";
+      } else {
+        list = QUESTIONS.filter((q) => q.category === target);
+        label = target;
+      }
+
+      if (list.length === 0) return;
+
+      state.view = "quiz";
+      state.modeLabel = label;
+      state.quizQuestions = state.shuffle ? shuffleArray(list) : list;
+      state.currentIndex = 0;
+      state.sessionAnswered = 0;
+      state.sessionCorrect = 0;
+      state.hasAnsweredCurrent = false;
+      state.lastUserAnswer = null;
+      state.clearedReviewNow = false;
+      state.sessionWrongQuestions = [];
+
+      render();
+    }
+
+    function submitAnswer(userAnswer) {
+      if (state.hasAnsweredCurrent) return;
+
+      const q = state.quizQuestions[state.currentIndex];
+      const isCorrect = userAnswer === q.answer;
+
+      state.hasAnsweredCurrent = true;
+      state.lastUserAnswer = userAnswer;
+      state.sessionAnswered += 1;
+      if (isCorrect) {
+        state.sessionCorrect += 1;
+      } else {
+        state.sessionWrongQuestions.push(q);
+      }
+
+      // 累計記録を更新
+      progress.totalAnswered += 1;
+      if (isCorrect) progress.totalCorrect += 1;
+
+      const prevStat = progress.questionStats[q.id] || { attempts: 0, correctCount: 0, lastCorrect: null };
+      progress.questionStats[q.id] = {
+        attempts: prevStat.attempts + 1,
+        correctCount: prevStat.correctCount + (isCorrect ? 1 : 0),
+        lastCorrect: isCorrect
+      };
+
+      // 間違えた問題の記録を更新
+      const wasInWrongList = progress.wrongIds.includes(q.id);
+      if (!isCorrect) {
+        if (!wasInWrongList) {
+          progress.wrongIds.push(q.id);
+        }
+        state.clearedReviewNow = false;
+      } else {
+        // 正解したら要復習リストから外す
+        if (wasInWrongList) {
+          progress.wrongIds = progress.wrongIds.filter((id) => id !== q.id);
+          state.clearedReviewNow = true;
+        } else {
+          state.clearedReviewNow = false;
+        }
+      }
+
+      saveProgress(progress);
+      render();
+    }
+
+    function nextQuestion() {
+      if (state.currentIndex + 1 < state.quizQuestions.length) {
+        state.currentIndex += 1;
+        state.hasAnsweredCurrent = false;
+        state.lastUserAnswer = null;
+        state.clearedReviewNow = false;
+        render();
+      } else {
+        state.view = "result";
+        render();
+      }
+    }
+
+    function removeWrongId(id) {
+      progress.wrongIds = progress.wrongIds.filter((item) => item !== id);
+      saveProgress(progress);
+      render();
+    }
+
+    function resetAllProgress() {
+      const ok = window.confirm("これまでの学習状況（正答数や間違えた問題の記録）をすべてリセットしますか？");
+      if (!ok) return;
+      progress = createEmptyProgress();
+      saveProgress(progress);
+      render();
+    }
+
+    /* =========================================================
+       6. 画面描画（HTMLを組み立てて表示する）
+       ========================================================= */
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function renderHome() {
+      const wrongIds = getValidWrongIds();
+      const totalRate = progress.totalAnswered > 0
+        ? Math.round((progress.totalCorrect / progress.totalAnswered) * 100)
+        : 0;
+
+      const categoryButtonsHtml = CATEGORIES.map((cat) => {
+        const summary = getCategorySummary(cat);
+        return `
+          <button class="category-btn" data-start="${escapeHtml(cat)}">
+            <div>
+              <div class="category-name">${escapeHtml(cat)}</div>
+              <div class="category-meta">全 ${summary.total} 問 ／ 前回正解 ${summary.masteredCount} 問</div>
+            </div>
+            <div class="category-arrow">▶</div>
+          </button>
+        `;
+      }).join("");
+
+      appEl.innerHTML = `
+        <section class="card">
+          <h2 class="section-title">これまでの学習状況（自動保存）</h2>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-value">${progress.totalCorrect} / ${progress.totalAnswered}</div>
+              <div class="stat-label">累計正答 / 回答数</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-value">${totalRate}%</div>
+              <div class="stat-label">累計正答率</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-value ${wrongIds.length > 0 ? "warn" : ""}">${wrongIds.length}問</div>
+              <div class="stat-label">間違えた問題</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2 class="section-title">復習・全分野から出題</h2>
+          <div class="stack">
+            <button class="btn-primary" data-start="all">
+              全分野まとめて挑戦（${QUESTIONS.length}問）
+            </button>
+            <button class="btn-warning" data-start="wrong" ${wrongIds.length === 0 ? "disabled" : ""}>
+              間違えた問題だけ復習（${wrongIds.length}問）
+            </button>
+            ${wrongIds.length > 0 ? `
+              <button class="btn-secondary" id="btn-view-wrong">
+                間違えた問題の一覧を見る
+              </button>
+            ` : ""}
+          </div>
+          <div class="option-row">
+            <label class="switch-label">
+              <input type="checkbox" id="toggle-shuffle" ${state.shuffle ? "checked" : ""} />
+              <span>出題順をシャッフルする</span>
+            </label>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2 class="section-title">分野を選んでスタート</h2>
+          <div class="category-list">
+            ${categoryButtonsHtml}
+          </div>
+        </section>
+
+        <div class="footer-actions">
+          <span style="font-size: 0.78rem; color: var(--muted);">登録問題数: ${QUESTIONS.length}問</span>
+          <button class="btn-ghost" id="btn-reset">学習記録をリセット</button>
+        </div>
+      `;
+
+      // イベント登録
+      document.querySelectorAll("[data-start]").forEach((btn) => {
+        btn.addEventListener("click", () => startQuiz(btn.getAttribute("data-start")));
+      });
+
+      const shuffleEl = document.getElementById("toggle-shuffle");
+      shuffleEl.addEventListener("change", (e) => {
+        state.shuffle = e.target.checked;
+      });
+
+      const viewWrongBtn = document.getElementById("btn-view-wrong");
+      if (viewWrongBtn) {
+        viewWrongBtn.addEventListener("click", () => {
+          state.view = "wrongList";
+          render();
+        });
+      }
+
+      document.getElementById("btn-reset").addEventListener("click", resetAllProgress);
+    }
+
+    function renderQuiz() {
+      const total = state.quizQuestions.length;
+      const q = state.quizQuestions[state.currentIndex];
+      const questionNo = state.currentIndex + 1;
+      const progressPercent = Math.round(((state.hasAnsweredCurrent ? questionNo : state.currentIndex) / total) * 100);
+      const isInWrongList = progress.wrongIds.includes(q.id);
+
+      let feedbackHtml = "";
+      if (state.hasAnsweredCurrent) {
+        const isCorrect = state.lastUserAnswer === q.answer;
+        const correctSymbol = q.answer ? "○（正しい）" : "×（誤り）";
+        const isLast = questionNo >= total;
+
+        feedbackHtml = `
+          <div class="feedback-box ${isCorrect ? "correct" : "incorrect"}">
+            <div class="feedback-title">
+              ${isCorrect ? "⭕ 正解！" : `❌ 不正解…（正解は ${correctSymbol}）`}
+            </div>
+            ${state.clearedReviewNow ? `<div class="feedback-note">🎉 要復習リストから解除されました！</div>` : ""}
+            <p class="explanation-text">${escapeHtml(q.explanation)}</p>
+          </div>
+          <div class="next-btn-wrap">
+            <button class="btn-primary" id="btn-next">
+              ${isLast ? "結果を見る" : "次の問題へ →"}
+            </button>
+          </div>
+        `;
+      }
+
+      appEl.innerHTML = `
+        <div class="quiz-topbar">
+          <button class="btn-ghost" id="btn-back-home">← もどる</button>
+          <div class="quiz-progress-text">
+            第 ${questionNo} / ${total} 問（正答 ${state.sessionCorrect} / ${state.sessionAnswered}問）
+          </div>
+        </div>
+
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" style="width: ${progressPercent}%"></div>
+        </div>
+
+        <section class="card">
+          <div class="badges">
+            <span class="badge">${escapeHtml(q.category)}</span>
+            ${(isInWrongList && !state.hasAnsweredCurrent) ? `<span class="badge review">要復習</span>` : ""}
+          </div>
+
+          <p class="question-text">${escapeHtml(q.statement)}</p>
+
+          <div class="answer-buttons">
+            <button class="btn-ox btn-maru" id="btn-maru" ${state.hasAnsweredCurrent ? "disabled" : ""}>
+              ○<span>正しい</span>
+            </button>
+            <button class="btn-ox btn-batsu" id="btn-batsu" ${state.hasAnsweredCurrent ? "disabled" : ""}>
+              ×<span>誤り</span>
+            </button>
+          </div>
+
+          ${feedbackHtml}
+        </section>
+      `;
+
+      document.getElementById("btn-back-home").addEventListener("click", () => {
+        state.view = "home";
+        render();
+      });
+
+      document.getElementById("btn-maru").addEventListener("click", () => submitAnswer(true));
+      document.getElementById("btn-batsu").addEventListener("click", () => submitAnswer(false));
+
+      const nextBtn = document.getElementById("btn-next");
+      if (nextBtn) {
+        nextBtn.addEventListener("click", nextQuestion);
+      }
+    }
+
+    function renderResult() {
+      const total = state.quizQuestions.length;
+      const rate = total > 0 ? Math.round((state.sessionCorrect / total) * 100) : 0;
+      const wrongCount = state.sessionWrongQuestions.length;
+
+      const wrongSummaryHtml = wrongCount > 0 ? `
+        <section class="card">
+          <h2 class="section-title">今回間違えた問題（${wrongCount}問）</h2>
+          ${state.sessionWrongQuestions.map((q) => `
+            <div class="wrong-item">
+              <span class="badge">${escapeHtml(q.category)}</span>
+              <div class="wrong-item-q">${escapeHtml(q.statement)}</div>
+              <div class="wrong-item-a">
+                <strong>正解：${q.answer ? "○" : "×"}</strong><br />
+                ${escapeHtml(q.explanation)}
+              </div>
+            </div>
+          `).join("")}
+        </section>
+      ` : "";
+
+      appEl.innerHTML = `
+        <section class="card">
+          <div class="result-score">
+            <div style="font-size: 0.9rem; color: var(--muted); margin-bottom: 6px;">
+              ${escapeHtml(state.modeLabel)} の結果
+            </div>
+            <div class="result-big">${state.sessionCorrect} / ${total} 問正解</div>
+            <div style="font-size: 1rem; font-weight: 700; margin-top: 4px;">
+              正答率 ${rate}%
+            </div>
+          </div>
+
+          <div class="stack" style="margin-top: 14px;">
+            ${getValidWrongIds().length > 0 ? `
+              <button class="btn-warning" id="btn-retry-wrong">
+                間違えた問題だけ復習する（${getValidWrongIds().length}問）
+              </button>
+            ` : ""}
+            <button class="btn-primary" id="btn-home">トップ画面へもどる</button>
+          </div>
+        </section>
+
+        ${wrongSummaryHtml}
+      `;
+
+      document.getElementById("btn-home").addEventListener("click", () => {
+        state.view = "home";
+        render();
+      });
+
+      const retryBtn = document.getElementById("btn-retry-wrong");
+      if (retryBtn) {
+        retryBtn.addEventListener("click", () => startQuiz("wrong"));
+      }
+    }
+
+    function renderWrongList() {
+      const wrongSet = new Set(getValidWrongIds());
+      const wrongQuestions = QUESTIONS.filter((q) => wrongSet.has(q.id));
+
+      appEl.innerHTML = `
+        <div class="quiz-topbar">
+          <button class="btn-ghost" id="btn-back">← もどる</button>
+          <div class="quiz-progress-text">間違えた問題一覧（${wrongQuestions.length}問）</div>
+        </div>
+
+        <section class="card">
+          ${wrongQuestions.length === 0 ? `
+            <p style="margin: 0; color: var(--muted); text-align: center;">
+              現在、間違えた問題はありません！
+            </p>
+          ` : wrongQuestions.map((q) => `
+            <div class="wrong-item">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="badge">${escapeHtml(q.category)}</span>
+                <button class="btn-ghost" data-remove-id="${escapeHtml(q.id)}">記録から外す</button>
+              </div>
+              <div class="wrong-item-q">${escapeHtml(q.statement)}</div>
+              <div class="wrong-item-a">
+                <strong>正解：${q.answer ? "○" : "×"}</strong><br />
+                ${escapeHtml(q.explanation)}
+              </div>
+            </div>
+          `).join("")}
+        </section>
+
+        ${wrongQuestions.length > 0 ? `
+          <button class="btn-warning" id="btn-start-wrong">
+            この${wrongQuestions.length}問を復習する
+          </button>
+        ` : ""}
+      `;
+
+      document.getElementById("btn-back").addEventListener("click", () => {
+        state.view = "home";
+        render();
+      });
+
+      document.querySelectorAll("[data-remove-id]").forEach((btn) => {
+        btn.addEventListener("click", () => removeWrongId(btn.getAttribute("data-remove-id")));
+      });
+
+      const startWrongBtn = document.getElementById("btn-start-wrong");
+      if (startWrongBtn) {
+        startWrongBtn.addEventListener("click", () => startQuiz("wrong"));
+      }
+    }
+
+    function render() {
+      if (state.view === "home") renderHome();
+      else if (state.view === "quiz") renderQuiz();
+      else if (state.view === "result") renderResult();
+      else if (state.view === "wrongList") renderWrongList();
+    }
+
+    // 初期表示
+    render();
+  </script>
+</body>
+</html>
